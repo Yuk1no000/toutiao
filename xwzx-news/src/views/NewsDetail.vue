@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNewsStore } from '../store/modules/news'
 import { useHistoryStore } from '../store/modules/history'
@@ -132,9 +132,9 @@ const toggleFavorite = async () => {
   }
 }
 
-// 组件挂载时获取新闻详情并添加到浏览历史
-onMounted(async () => {
-  await newsStore.getNewsDetail(newsId.value)
+// 获取新闻详情的函数
+const fetchNewsDetail = async (id) => {
+  await newsStore.getNewsDetail(id)
   
   // 添加到浏览历史
   if (newsStore.newsDetail.id) {
@@ -167,7 +167,22 @@ onMounted(async () => {
       }
     }
   }
+}
+
+// 组件挂载时获取新闻详情
+onMounted(async () => {
+  await fetchNewsDetail(newsId.value)
 })
+
+// 监听路由变化，当新闻ID改变时重新获取数据
+watch(
+  () => route.params.id,
+  async (newId) => {
+    if (newId) {
+      await fetchNewsDetail(Number(newId))
+    }
+  }
+)
 </script>
 
 <style scoped>
